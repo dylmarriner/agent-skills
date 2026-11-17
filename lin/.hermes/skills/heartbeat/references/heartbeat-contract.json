@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "program": "heartbeat",
+  "min_version": "1.0",
+  "flags": [
+    "--label",
+    "--name",
+    "--interval",
+    "--every",
+    "--log",
+    "--until-file",
+    "--until",
+    "--max-ticks",
+    "--max-hours",
+    "--stop",
+    "--list",
+    "--help",
+    "-h",
+    "--due",
+    "--problems",
+    "--due-set",
+    "--due-cancel",
+    "--due-tick"
+  ],
+  "endings": [
+    "FINISHED",
+    "NOT FINISHED",
+    "STOPPED"
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "title": "Infrastructure Overview",
+  "uid": "infra-overview",
+  "tags": ["infrastructure"],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "30s",
+  "time": {"from": "now-1h", "to": "now"},
+  "panels": [
+    {
+      "title": "CPU Usage",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [{"expr": "100 - (avg by(instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100)", "legendFormat": "{{instance}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}}
+    },
+    {
+      "title": "Memory Usage %",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [{"expr": "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))", "legendFormat": "{{instance}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}}
+    },
+    {
+      "title": "Load Average (15m)",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [{"expr": "node_load15", "legendFormat": "{{instance}}", "refId": "A"}]
+    },
+    {
+      "title": "CPU Temperatures",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "targets": [{"expr": "node_hwmon_temp_celsius{chip=\"coretemp\"}", "legendFormat": "{{instance}}-{{sensor}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "celsius"}}
+    },
+    {
+      "title": "GPU Temperatures",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "targets": [
+        {"expr": "amdgpu_temp_celsius{sensor=\"edge\"}", "legendFormat": "RX580 (kubuntux)", "refId": "A"},
+        {"expr": "nvidia_gpu_temp_celsius", "legendFormat": "MX150 (lin)", "refId": "B"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "celsius"}}
+    },
+    {
+      "title": "GPU Utilization %",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+      "targets": [
+        {"expr": "amdgpu_gpu_busy_percent", "legendFormat": "RX580 (kubuntux)", "refId": "A"},
+        {"expr": "nvidia_gpu_utilization_percent", "legendFormat": "MX150 (lin)", "refId": "B"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}}
+    },
+    {
+      "title": "GPU VRAM %",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+      "targets": [
+        {"expr": "amdgpu_vram_usage_percent", "legendFormat": "RX580 (kubuntux)", "refId": "A"},
+        {"expr": "nvidia_memory_usage_percent", "legendFormat": "MX150 (lin)", "refId": "B"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}}
+    },
+    {
+      "title": "GPU Power (Watts)",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+      "targets": [
+        {"expr": "amdgpu_power_watts", "legendFormat": "RX580 (kubuntux)", "refId": "A"},
+        {"expr": "nvidia_power_watts", "legendFormat": "MX150 (lin)", "refId": "B"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "watts"}}
+    },
+    {
+      "title": "Disk Usage %",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+      "targets": [{"expr": "100 * (1 - (node_filesystem_avail_bytes{mountpoint!~\"/snap/.*\",fstype!~\"overlay|tmpfs|devtmpfs|efivarfs\"} / node_filesystem_size_bytes{mountpoint!~\"/snap/.*\",fstype!~\"overlay|tmpfs|devtmpfs|efivarfs\"}))", "legendFormat": "{{instance}}-{{mountpoint}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}}
+    },
+    {
+      "title": "Error Logs (All Machines)",
+      "type": "logs",
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 40},
+      "targets": [{"expr": "{job=\"varlogs\"} |=~ \"(?i)(error|fail|critical|panic|exception)\"", "refId": "A"}],
+      "options": {"showLabels": true, "showTime": true, "wrapLogMessage": true, "enableLogDetails": true, "dedupStrategy": "none", "sortOrder": "Descending"}
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+/**
+ * <cmd-b> — <one-line purpose, with optional flags>
+ *
+ * Demonstrates the standard flag-parsing pattern for subcommands:
+ *   --foo <value>  (with bounds-check)
+ *   --strict       (boolean toggle)
+ *
+ * Exit codes:
+ *   0  success
+ *   1  command failed
+ *   2  usage error (unknown flag, bad value, missing arg)
+ */
+use <dep_for_data>::<Type>;
+use serde::Serialize;
+use std::time::Instant;
+
+use crate::output::{print_human, print_human_err, print_json};
+
+#[derive(Serialize)]
+struct CmdBResult {
+    command: &'static str,
+    status: &'static str,
+    iterations: u64,
+    elapsed_us: u128,
+}
+
+pub fn run(json: bool, args: &[&str]) -> Result<u8, u8> {
+    // === GOTCHA 4: when you loop `i` over an args slice by index and
+    // consume `args[i+1]` inside the match arm, advance `i` by 2.
+    // Forgetting the `i += 2` is the most common flag-parser bug. ===
+    let mut iters: u64 = 1_000_000;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i] {
+            "--iters" => {
+                if i + 1 >= args.len() {
+                    eprintln!("<cmd-b>: --iters requires a value");
+                    return Err(2);
+                }
+                iters = match args[i + 1].parse::<u64>() {
+                    Ok(n) if n > 0 && n <= 100_000_000 => n,
+                    _ => {
+                        eprintln!("<cmd-b>: --iters must be 1..=100000000");
+                        return Err(2);
+                    }
+                };
+                i += 2;
+            }
+            other if other.starts_with('-') => {
+                eprintln!("<cmd-b>: unknown flag '{}'", other);
+                return Err(2);
+            }
+            _ => {
+                eprintln!("<cmd-b>: unexpected arg '{}'", args[i]);
+                return Err(2);
+            }
+        }
+    }
+
+    let start = Instant::now();
+    // ... do work ...
+    let elapsed = start.elapsed();
+
+    if json {
+        print_json(&CmdBResult {
+            command: "<cmd-b>",
+            status: "pass",
+            iterations: iters,
+            elapsed_us: elapsed.as_micros(),
+        });
+    } else {
+        print_human(&format!(
+            "<cmd-b>: PASS\n  iters: {}\n  elapsed: {} us",
+            iters,
+            elapsed.as_micros()
+        ));
+    }
+    Ok(0)
+}

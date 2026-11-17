@@ -1,0 +1,7 @@
+{
+  "name": "openhuman-core",
+  "version": "1.0.0",
+  "description": "OpenHuman memory tree integrated into Hermes",
+  "author": "Hermes",
+  "enabled": true
+}

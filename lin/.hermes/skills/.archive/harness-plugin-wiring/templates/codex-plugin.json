@@ -1,0 +1,21 @@
+{
+  "name": "PLUGIN_NAME",
+  "version": "1.0.0",
+  "description": "What the pack gives Codex: N skills, M commands.",
+  "author": {
+    "name": "OWNER_NAME",
+    "url": "https://github.com/OWNER_NAME"
+  },
+  "homepage": "https://github.com/OWNER_NAME/REPO_NAME",
+  "repository": "https://github.com/OWNER_NAME/REPO_NAME",
+  "license": "MIT",
+  "keywords": ["codex", "skills", "agents"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "PLUGIN_NAME",
+    "shortDescription": "One line for the plugin list.",
+    "developerName": "OWNER_NAME",
+    "category": "Coding"
+  }
+}

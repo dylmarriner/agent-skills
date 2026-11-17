@@ -1,0 +1,61 @@
+{
+  "name": "openclawbrain",
+  "version": "0.2.17",
+  "private": false,
+  "type": "module",
+  "description": "Aggressive-but-safe local memory graph plugin for OpenClaw with audited capture, strict scoped storage, bounded injection, and SQLite proof surfaces.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "openclaw.plugin.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "openclaw": {
+    "extensions": [
+      "./dist/index.js"
+    ],
+    "runtimeExtensions": [
+      "./dist/index.js"
+    ],
+    "compat": {
+      "pluginApi": ">=2026.5.2",
+      "minGatewayVersion": "2026.5.2"
+    },
+    "build": {
+      "openclawVersion": "2026.5.2",
+      "pluginSdkVersion": "2026.5.2"
+    }
+  },
+  "scripts": {
+    "check": "node scripts/build.mjs --check",
+    "build": "node scripts/build.mjs",
+    "test": "node scripts/build.mjs && node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonathangu/openclawbrain.git",
+    "directory": "packages/openclaw-plugin"
+  },
+  "homepage": "https://github.com/jonathangu/openclawbrain#readme",
+  "bugs": {
+    "url": "https://github.com/jonathangu/openclawbrain/issues"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.9.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13"
+  },
+  "license": "MIT"
+}

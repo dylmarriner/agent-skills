@@ -1,0 +1,22 @@
+/**
+ * Output helpers — keep human and JSON paths in lockstep.
+ *
+ * Convention: stdout = command output, stderr = tracing/diagnostics.
+ * Use print_human/print_human_err for CLI text; print_json for machine output.
+ */
+use serde::Serialize;
+
+pub fn print_human(line: &str) {
+    println!("{}", line);
+}
+
+pub fn print_human_err(line: &str) {
+    eprintln!("{}", line);
+}
+
+pub fn print_json<T: Serialize>(value: &T) {
+    match serde_json::to_string_pretty(value) {
+        Ok(s) => println!("{}", s),
+        Err(e) => eprintln!("{{\"error\":\"failed to serialize: {}\"}}", e),
+    }
+}

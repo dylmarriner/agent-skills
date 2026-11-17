@@ -1,0 +1,53 @@
+{
+  "id": "nexus-self-improve",
+  "name": "Nexus Self-Improvement",
+  "kind": "tool",
+  "description": "Continuous self-improvement engine: evaluates responses, tracks mistakes, extracts patterns, and compounds learnings across sessions",
+  "contracts": {
+    "tools": ["self_evaluate", "review_patterns", "reset_learning"]
+  },
+  "activation": {
+    "onStartup": true
+  },
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "dataDir": {
+        "type": "string",
+        "default": "~/.openclaw/self-improve",
+        "description": "Directory for persistent learning storage"
+      },
+      "maxMemoryLines": {
+        "type": "integer",
+        "default": 150,
+        "description": "Maximum lines in active memory file"
+      },
+      "archiveThreshold": {
+        "type": "integer",
+        "default": 50,
+        "description": "Oldest corrections to keep before archiving"
+      },
+      "autoEvaluate": {
+        "type": "boolean",
+        "default": true,
+        "description": "Auto-evaluate responses for quality"
+      },
+      "learningFrequency": {
+        "type": "integer",
+        "default": 5,
+        "description": "Extract learnings every N interactions"
+      },
+      "debug": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable verbose debug logging"
+      }
+    }
+  },
+  "uiHints": {
+    "dataDir": {
+      "label": "Data Directory",
+      "placeholder": "~/.openclaw/self-improve"
+    }
+  }
+}

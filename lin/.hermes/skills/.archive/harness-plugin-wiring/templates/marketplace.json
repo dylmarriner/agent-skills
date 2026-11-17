@@ -1,0 +1,26 @@
+{
+  "name": "REPO_NAME",
+  "owner": {
+    "name": "OWNER_NAME",
+    "url": "https://github.com/OWNER_NAME"
+  },
+  "metadata": {
+    "description": "REPO_NAME — what the pack contains, one line."
+  },
+  "plugins": [
+    {
+      "name": "PLUGIN_NAME",
+      "source": "./PLUGIN_PATH",
+      "description": "What this plugin gives an agent: N skills, M commands, K agents.",
+      "version": "1.0.0",
+      "author": {
+        "name": "OWNER_NAME"
+      },
+      "license": "MIT",
+      "homepage": "https://github.com/OWNER_NAME/REPO_NAME",
+      "repository": "https://github.com/OWNER_NAME/REPO_NAME",
+      "keywords": ["skills", "agents", "commands"],
+      "category": "development"
+    }
+  ]
+}

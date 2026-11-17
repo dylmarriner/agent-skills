@@ -1,0 +1,92 @@
+{
+  "id": "openclaw-honcho",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "apiKey": {
+        "type": "string",
+        "description": "Honcho API key (or set HONCHO_API_KEY env var)"
+      },
+      "workspaceId": {
+        "type": "string",
+        "description": "Honcho workspace ID (defaults to 'openclaw')"
+      },
+      "baseUrl": {
+        "type": "string",
+        "default": "https://api.honcho.dev"
+      },
+      "timeoutMs": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "HTTP timeout in milliseconds for Honcho SDK requests. Useful for slower self-hosted local models."
+      },
+      "noisePatterns": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Additional substring patterns to skip messages. Built-in defaults (HEARTBEAT_OK, cron reminders, etc.) always apply."
+      },
+      "ownerObserveOthers": {
+        "type": "boolean",
+        "default": false,
+        "description": "Whether the owner peer observes agent messages. When true, Honcho models the user's awareness of assistant responses."
+      },
+      "disableDefaultNoisePatterns": {
+        "type": "boolean",
+        "default": false,
+        "description": "When true, built-in noise patterns are not applied \u00e2\u0080\u0094 only noisePatterns entries are used."
+      },
+      "crossSessionSearch": {
+        "type": "boolean",
+        "default": true,
+        "description": "When true (default), memory_search/memory_get can return results from any session in the workspace. When false, results are scoped to the active session and its child sessions only."
+      }
+    }
+  },
+  "uiHints": {
+    "apiKey": {
+      "label": "Honcho API Key",
+      "sensitive": true,
+      "placeholder": "hc_...",
+      "help": "API key for Honcho (or use ${HONCHO_API_KEY})"
+    },
+    "workspaceId": {
+      "label": "Workspace ID",
+      "placeholder": "openclaw",
+      "help": "Honcho workspace ID"
+    },
+    "baseUrl": {
+      "label": "API Base URL",
+      "advanced": true,
+      "placeholder": "https://api.honcho.dev"
+    },
+    "timeoutMs": {
+      "label": "HTTP Timeout (ms)",
+      "advanced": true,
+      "placeholder": "60000",
+      "help": "Increase this for self-hosted Honcho deployments backed by slower local models."
+    },
+    "noisePatterns": {
+      "label": "Noise Patterns",
+      "advanced": true,
+      "help": "Additional substring patterns to filter. Messages containing any pattern are dropped before saving to Honcho."
+    },
+    "ownerObserveOthers": {
+      "label": "Owner Observes Agent",
+      "advanced": true,
+      "help": "When enabled, Honcho models the user as aware of the agent's responses. Default: off."
+    },
+    "disableDefaultNoisePatterns": {
+      "label": "Disable Default Noise Patterns",
+      "advanced": true,
+      "help": "When enabled, only custom noisePatterns entries are used \u00e2\u0080\u0094 built-in defaults are skipped."
+    },
+    "crossSessionSearch": {
+      "label": "Cross-Session Search",
+      "advanced": true,
+      "help": "When enabled (default), memory tools can return results from any session in the workspace. Disable to scope results to the active session only."
+    }
+  }
+}

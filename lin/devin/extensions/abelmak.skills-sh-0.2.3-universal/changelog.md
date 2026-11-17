@@ -1,0 +1,166 @@
+# Changelog
+
+All notable changes to the Skills.sh Agent Skills Manager extension will be documented in this file.
+
+## [Unreleased]
+
+## [0.2.3] - 2026-03-26
+
+### Added
+
+- **Official skills tab** — new "Official" link in the marketplace nav bar (alongside Audits and Docs) showcasing skills from the companies that build the technology. Table layout with CREATOR / REPOS / SKILLS columns matching skills.sh/official UX. Click an org to drill into repos, then individual skills with install counts.
+- **Per-repo skill detail** — clicking a repo in the Official owner view fetches the repo page from skills.sh to show real skill names and install counts (not stale /official snapshot data). Individual skills are clickable for full detail view.
+- **Fresh install counts** — owner and repo pages are scraped individually to show up-to-date install numbers instead of the stale /official listing cache.
+
+### Fixed
+
+- **Official view back-button spacing** — added top padding to Official/Owner/Repo views matching Audits/Docs layout.
+- **Official navigation stack** — drilling Official → Owner → Repo → Skill Detail and pressing Back now returns through each level correctly (was requiring 5+ clicks).
+- **Official install/update buttons** — repo skill rows now use the standard button pattern (`data-install`/`data-skill-name`) so the global `updateButtonStates` handler, install, and update flows all work. Update buttons render immediately on first paint (no 3-4s flash from "✓ Installed" to "Update").
+- **RSC parser for owner pages** — skills.sh changed from embedding JSON to pre-rendered RSC virtual DOM; rewrote `parseOwnerPage` to extract data from component tree.
+
+## [0.2.2] - 2026-03-24
+
+### Added
+
+- **Rating prompt** — after 3+ skill installs/updates and 3+ days of use, a non-intrusive notification invites users to rate the extension on the Marketplace. Options: "Rate", "Remind Me Later" (14 days), or "No Thanks" (permanent dismiss). Silent dismiss snoozes for 7 days. Respects the `showNotifications` setting.
+- **"Rate this Extension" command** — available in the command palette (`Skills.sh: Rate this Extension`) for user-initiated marketplace reviews
+- **"Reset Rating State" debug command** — available in command palette for testing the rating prompt flow
+- **Collapsible publisher groups** — leaderboard groups consecutive skills from the same source repo when 4+ appear in a row. First skill shown normally, rest collapsed as "+N more from {source} ({total} total)". Click to expand/collapse. Matches skills.sh website UX.
+
+### Fixed
+
+- **Skill detail page two-column layout** — the detail scraper was matching the wrong `prose` div after skills.sh added a Summary card, producing broken HTML that collapsed the CSS grid. Anchored the SKILL.md regex to the correct label; added Summary card rendering; added belt-and-suspenders CSS override inside the narrow-viewport media query to preserve two-column grid in editor tab view.
+
+## [0.2.1] - 2026-03-16
+
+### Added
+
+- **At-a-glance security audit badges** — skill cards (search, leaderboard, installed tab) now show a composite shield badge with pass ratio (e.g., "2/3 audits passed"). All pass = green, partial pass = neutral gray, none pass = red. Hover for per-partner breakdown; click opens the skill's security page on skills.sh. TreeView sidebar shows colored circle icons. Audit data pre-fetched on activation (single request); detail-page visits backfill any missing skills.
+- **Custom welcome page** — rich branded welcome tab with SKILLS ASCII art, agent showcase, 9 feature highlight cards covering all major capabilities, and quick-action CTAs — auto-opens on first activation
+- **Docs in editor tab** — "Read Documentation" now opens in a full editor tab instead of the sidebar
+
+### Fixed
+
+- **Update button flicker** — when updating a skill, the button briefly showed "Install" between "Updating..." and "✓ Installed" because the remove+add workaround (for [skills#371](https://github.com/vercel-labs/skills/issues/371)) triggered a mid-cycle rescan. Added an `updatingSkillNames` guard in the extension host that suppresses spurious "removed" notifications, "Add to skills.json?" prompts, and button state resets during the update cycle.
+- **Detail page action buttons broken** — "Add to Skills.json", "Update", and "Uninstall" buttons on the skill detail page were non-functional since the scroll-position-preserving overlay refactor (`c414c09`). Root cause: click delegation was attached to `resultsEl` but the detail overlay lives on `document.body`. Extracted shared `handleActionButtons()` helper and wired it into the overlay's click listener.
+
+### Changed
+
+- **Smooth content transitions** — marketplace tab/view switches now use a subtle fade-in animation instead of instant content swaps
+- **Updated README demos** — replaced hero and marketplace demo images with fresh recordings
+
+### Removed
+
+- **Onboarding walkthrough** — replaced by the custom welcome page (the built-in VS Code walkthrough wizard has been removed)
+
+## [0.2.0] - 2026-03-12
+
+### Added
+
+- **Auto-invocation toggle** — control whether AI agents auto-invoke each skill via a prominent toggle switch on each card. Writes `disable-model-invocation` to SKILL.md frontmatter (respected by Claude Code and Cursor).
+- **Card grid layout** — redesigned Installed tab from row-based list to responsive card grid with status indicators
+- **Overflow menu** — secondary actions (Open SKILL.md, manifest toggle, copy path) moved to per-card overflow menu
+- **Open SKILL.md** — quickly open a skill's source file from the overflow menu
+- **Auto-invoke info banner** — informational banner in the Installed tab explaining that agents like Claude Code, Cursor, and Windsurf auto-invoke skills by default, with a link to Anthropic's documentation
+
+### Fixed
+
+- **Toggle race condition** — auto-invoke toggle no longer flickers or reverts when file watcher rescans overlap with optimistic UI updates
+- **Accordion double-click** — group headers in Installed tab no longer toggle twice on rapid clicks (200ms debounce)
+- **Detail page button spacing** — restored missing gap between action buttons (e.g., "Add to skills.json" and "Uninstall") on skill detail pages
+
+## [0.1.10] - 2026-03-06
+
+### Added
+
+- Open VSX downloads badge in README
+
+## [0.1.9] - 2026-03-06
+
+### Fixed
+
+- Demo images now render on VS Code Marketplace and Open VSX (switched to absolute GitHub URLs)
+
+## [0.1.8] - 2026-03-06
+
+### Added
+
+- README demos — hero install flow, marketplace exploration, and skills.json sharing (animated webp)
+- Installs badge and updated tagline in README
+- "Edit skills.json" command in installed skills view menu
+- Known issues moved to dedicated `KNOWN_ISSUES.md`
+
+### Changed
+
+- Marketplace UX improvements — preserve scroll position on back navigation with detail overlay
+- Updated README settings table to include `activeAgents`
+- Team Sharing section rewritten for clarity
+- Quick Start step 5 is now agent-agnostic
+
+## [0.1.7] - 2026-03-04
+
+### Added
+
+- Architecture diagrams (Excalidraw) with plain-language annotations for system context, install flow, multi-agent scanning, and webview communication
+- Dedicated architecture documentation page (`docs/architecture/architecture.md`)
+
+### Changed
+
+- Clean up TreeView — removed agent badges and preview button for a simpler sidebar
+- Rebuilt all architecture diagrams from scratch with new design spec and improved readability
+
+## [0.1.6] - 2026-03-01
+
+### Added
+
+- **Multi-agent awareness** — scan skill directories for 11 AI coding agents (Claude Code, Cursor, Windsurf, GitHub Copilot, Codex, Roo Code, Gemini CLI, Trae, Kiro, Continue, and the canonical skills.sh directory). Skills found in multiple agent directories are deduplicated and show agent badges in the TreeView, webview installed tab, and skill detail page.
+- Agent logo carousel in marketplace hero section
+- ROADMAP.md with planned features and priorities
+
+### Changed
+
+- Replaced extension logo with skill tree design
+- Switched CI to `@vscode/vsce` (replacing deprecated `vsce` package)
+
+## [0.1.5] - 2026-02-28
+
+### Changed
+
+- Split publish workflow into parallel independent jobs (VS Code Marketplace and Open VSX publish independently)
+
+## [0.1.4] - 2026-02-27
+
+### Added
+
+- Antigravity added to supported editor list
+
+### Changed
+
+- Switched sidebar icon to line/stroke style
+- Optimized marketplace keywords for discoverability
+
+## [0.1.3] - 2026-02-26
+
+### Changed
+
+- Exclude source maps and CI configs from VSIX package
+- Added publishing documentation to CLAUDE.md
+
+## [0.1.0] - 2026-02-25
+
+### Added
+
+- **Installed Skills TreeView** — scans `~/.claude/skills/`, `~/.cursor/skills/`, `~/.codeium/windsurf/skills/`, and `~/.codex/skills/` for installed agent skills, grouped by source repository
+- **Marketplace panel** — search and browse skills from skills.sh with one-click install via `npx skills add`
+- **Update checking** — detect outdated skills using the GitHub Trees API and update them in-place (remove + add to work around upstream CLI bugs)
+- **Launch Claude with Skill** — start a Claude Code session with a specific skill pre-loaded
+- **SKILL.md preview** — preview skill documentation in a VS Code editor tab
+- **Multi-directory scanning** — scans canonical skill directories (`~/.agents/skills/`, `~/.claude/skills/`) and project-level directories
+- **Project and global scopes** — install skills at project level (`.claude/skills/`) or globally (`~/.claude/skills/`)
+- **Team sharing** — `skills.json` manifest to share recommended skills with teammates, with auto-detect for missing skills
+- **Security audits browser** — view audit results from Gen Agent Trust Hub, Socket, and Snyk
+- **Documentation browser** — read skills.sh docs (Overview, CLI, FAQ) in-editor
+- **Skill detail pages** — view install counts, repository info, security audits, and rendered SKILL.md
+- **File system watcher** — auto-refresh when skills are added or removed outside the extension
+- **Lock file monitoring** — watches `~/.agents/.skill-lock.json` for reliable install/update detection

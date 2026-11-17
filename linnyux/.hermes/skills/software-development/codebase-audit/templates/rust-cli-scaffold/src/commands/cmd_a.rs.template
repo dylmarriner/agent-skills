@@ -1,0 +1,35 @@
+/**
+ * <cmd-a> — <one-line purpose>
+ *
+ * Exit codes:
+ *   0  success
+ *   1  command failed
+ *   2  usage error
+ */
+use <dep_for_data>::<Type>;
+use serde::Serialize;
+
+use crate::output::{print_human, print_human_err, print_json};
+
+#[derive(Serialize)]
+struct Result {
+    command: &'static str,
+    status: &'static str,
+    // add fields the JSON output should expose
+}
+
+pub fn run(json: bool) -> Result<u8, u8> {
+    // Do the actual work here. Build a Result struct on success.
+    let data = <Type>::default(); // example
+
+    if json {
+        print_json(&Result {
+            command: "<cmd-a>",
+            status: "pass",
+            // ...
+        });
+    } else {
+        print_human("<cmd-a>: PASS\n  <key>: <value>");
+    }
+    Ok(0)
+}

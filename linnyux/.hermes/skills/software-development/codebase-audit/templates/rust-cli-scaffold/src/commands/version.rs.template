@@ -1,0 +1,31 @@
+/**
+ * version — print crate / workspace version info.
+ *
+ * Always exits 0.
+ */
+use <dep>::<Type>;
+use serde::Serialize;
+use std::process::ExitCode;
+
+use crate::output::{print_human, print_json};
+
+#[derive(Serialize)]
+struct VersionInfo {
+    crate_name: &'static str,
+    version: &'static str,
+    // add fields the user might want (canon digests, build date, etc.)
+}
+
+pub fn run(json: bool) -> ExitCode {
+    let info = VersionInfo {
+        crate_name: env!("CARGO_PKG_NAME"),
+        version: env!("CARGO_PKG_VERSION"),
+    };
+
+    if json {
+        print_json(&info);
+    } else {
+        print_human(&format!("{} {}", info.crate_name, info.version));
+    }
+    ExitCode::SUCCESS
+}

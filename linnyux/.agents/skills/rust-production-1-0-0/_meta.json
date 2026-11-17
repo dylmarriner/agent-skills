@@ -1,0 +1,8 @@
+{
+  "name": "rust-production",
+  "version": "1.0.0",
+  "description": "Strict production Rust generation with zero stubs or placeholders.",
+  "author": "windsurf-skill",
+  "tags": ["rust", "systems", "production"],
+  "priority": 90
+}

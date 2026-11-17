@@ -1,0 +1,197 @@
+#!/usr/bin/env bash
+# Continue an exact native session, or hand the readable progress record to a new Reach receiver.
+# Exit 0: a conversation continued/rebuilt (the next action may remain unfinished).
+# Exit 1: no recovery completed, lost task data, or an unresolved release. Exit 2: usage.
+set -Eeuo pipefail
+
+usage() {
+  local status="${1:-2}"
+  cat >&"$((status == 0 ? 1 : 2))" <<'USAGE'
+usage: sno rotate-agent-resume --to claude-code|codex|cursor|hermes|openclaw [--model <M>] [--provider <P>] --cwd <checkout> --checkpoint <progress-record>
+                               --work <label> [--report-to <seat-address>] [--checkpoint-cmd <cmd>]
+Reports resumed, rebuilt or lost separately from next_action=completed|unfinished|blocked.
+A released receiver keeps ownership even when cleanup or reporting fails.
+USAGE
+  exit "$status"
+}
+MODEL="" PROVIDER="" TO="" CWD="" CHECKPOINT="" WORK="" REPORT_TO="" CKPT_CMD=(sno handoff-checkpoint)
+(( $# > 0 )) || usage 0
+while (( $# )); do
+  case "$1" in
+    --model|--provider|--to|--cwd|--checkpoint|--work|--report-to|--checkpoint-cmd)
+      (( $# >= 2 )) && [[ -n "$2" ]] || usage
+      case "$1" in
+        --model) MODEL="$2" ;; --provider) PROVIDER="$2" ;; --to) TO="$2" ;;
+        --cwd) CWD="$2" ;; --checkpoint) CHECKPOINT="$2" ;; --work) WORK="$2" ;;
+        --report-to) REPORT_TO="$2" ;; --checkpoint-cmd) CKPT_CMD=("$2") ;;
+      esac
+      shift 2 ;;
+    -h|--help) usage 0 ;;
+    *) printf 'rotate-agent-resume: unknown option %s\n' "$1" >&2; usage ;;
+  esac
+done
+[[ "$TO" =~ ^(claude-code|codex|cursor|hermes|openclaw)$ && "$WORK" =~ ^[a-z0-9][a-z0-9-]*$ && -n "$CWD" && -n "$CHECKPOINT" ]] || usage
+[[ "$TO" != hermes && "$TO" != openclaw || ( -n "$MODEL" && -n "$PROVIDER" ) ]] || usage
+# Like realpath -m: resolve the parts that exist, require nothing to exist. GNU first; python3 on macOS.
+resolve_path() {
+  realpath -m -- "$1" 2>/dev/null ||
+    python3 -c 'import os, sys; sys.stdout.buffer.write(os.path.realpath(os.fsencode(sys.argv[1])))' "$1"
+}
+CWD="$(resolve_path "$CWD")"
+CHECKPOINT="$(resolve_path "$CHECKPOINT")"
+HERE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="${SNO_REACH_STATE_ROOT:-${SNO_REACH_ROOT:-$HOME/.local/state/sno-reach}}"
+DEADLINE=$((SECONDS + 295))
+bounded() {
+  local seconds="$1" left=$((DEADLINE - SECONDS)); shift
+  (( left > 0 )) || return 124
+  (( left >= seconds )) || seconds="$left"
+  timeout "$seconds" "$@"
+}
+log_failure() {
+  printf 'rotate-agent-resume: operation=%s target=%s error=%s; %s\n' "$1" "$2" "$3" "$4" >&2
+}
+field() { sed -n '/^<!-- machine-record:start -->$/,/^<!-- machine-record:end -->$/{s/^'"$1"': //p;}' "$CHECKPOINT" | head -n1; }
+section() { awk -v heading="## $1" '$0 == heading {inside=1; next} /^## / {inside=0} inside && NF {print}' "$CHECKPOINT"; }
+[[ -r "$CHECKPOINT" ]] || { printf 'lost next_action=blocked missing=readable-brief path=%s\n' "$CHECKPOINT"; exit 1; }
+[[ -d "$CWD" ]] || { log_failure checkout "$CWD" 'directory unavailable' 'no recovery completed; brief retained'; exit 1; }
+recorded="$(field checkout)"
+if [[ -n "$recorded" && "$(resolve_path "$recorded")" != "$(git -C "$CWD" rev-parse --show-toplevel 2>/dev/null || printf '%s' "$CWD")" ]]; then
+  log_failure checkout "$CWD" "brief names $recorded" 'no recovery completed; use the recorded checkout'
+  exit 1
+fi
+original="$(field runtime)"; session="$(field session-id)"
+[[ "$original" != claude ]] || original=claude-code
+verdict=unknown
+if [[ "$original" == claude-code || "$original" == codex ]] && command -v sno >/dev/null; then
+  quota_status=0
+  quota="$(bounded 60 sno subscription-quota-check --agent "$original" --json 2>&1)" || quota_status=$?
+  verdict="$(jq -r '.vendor.verdict // "unknown"' <<<"$quota" 2>/dev/null)" || verdict=unknown
+  if (( quota_status != 0 )); then
+    log_failure quota "$original" "$quota" "returned verdict=$verdict; unknown/authentication is not exhausted quota"
+  fi
+fi
+native_prompt="Continue the interrupted authorized task in this exact conversation. Read $CHECKPOINT for the durable next action, expected result and latest failed operation. Reconcile actual file/tool results before repeating work; memory only supplements the owner's instructions. Complete the unfinished action when possible and report its actual result and the earlier failure. End with CONTINUITY_ACTION completed, CONTINUITY_ACTION unfinished or CONTINUITY_ACTION blocked on its own line. Do not call a mere acknowledgement completion. Keep the same progress record accurate before actions and at task boundaries."
+[[ -z "$REPORT_TO" ]] || native_prompt+=" Report to $REPORT_TO."
+if [[ -n "$session" && "$verdict" != wait && ( "$original" == claude-code || "$original" == codex ) ]]; then
+  native=()
+  case "$original" in
+    claude-code) native=(claude -p --resume "$session" "$native_prompt") ;;
+    codex) native=(codex exec resume "$session" "$native_prompt") ;;
+  esac
+  if command -v "${native[0]}" >/dev/null; then
+    native_status=0
+    answer="$(cd -- "$CWD" && bounded 120 "${native[@]}" 2>&1)" || native_status=$?
+    printf '%s\n' "$answer"
+    if (( native_status == 0 )) && [[ -n "${answer//[[:space:]]/}" ]]; then
+      action="$(sed -nE 's/^CONTINUITY_ACTION (completed|unfinished|blocked)$/\1/p' <<<"$answer" | tail -n1)"
+      printf 'resumed next_action=%s session=%s\n' "${action:-unfinished}" "$session"
+      exit 0
+    fi
+    log_failure native-resume "$session" "exit $native_status: ${answer:-empty receiver response}" 'trying the saved brief in a new conversation'
+  else
+    log_failure native-resume "$session" "${native[0]} unavailable" 'trying a usable receiver with the saved brief'
+  fi
+elif [[ "$verdict" == wait ]]; then
+  printf 'quota exhausted agent=%s; native resume and same-vendor rebuild skipped\n' "$original" >&2
+else
+  log_failure native-resume "$CHECKPOINT" 'exact native session identity unavailable' 'rebuilding from the readable brief'
+fi
+if [[ -z "$(section 'Objective and authorization')" || -z "$(section Next)" ]]; then
+  printf 'lost next_action=blocked missing=objective-or-next-action path=%s\n' "$CHECKPOINT"
+  exit 1
+fi
+# Verification is useful context, never a prerequisite for reading available task facts.
+verify_status=0
+verify_out="$("${CKPT_CMD[@]}" --verify "$CHECKPOINT" 2>&1)" || verify_status=$?
+if (( verify_status > 1 )); then
+  log_failure verify "$CHECKPOINT" "$verify_out" 'receiver will reconcile available files and task records'
+fi
+rebuild() {
+  local agent="$1" model="$2" provider="$3" kind seat spawned nonce ready release_status receipt actual_provider current
+  kind="$agent"; case "$agent" in claude-code) kind=claude ;; cursor) kind=cursor-agent ;; esac
+  command -v "$kind" >/dev/null || { log_failure rebuild "$agent" 'CLI unavailable' 'brief retained'; return 1; }
+  for tool in sno jq; do
+    command -v "$tool" >/dev/null || { log_failure rebuild "$agent" "$tool unavailable" 'brief retained'; return 1; }
+  done
+  seat="resume.$WORK-$agent@$(hostname | tr '[:upper:]' '[:lower:]')"
+  # Reach's existing seat/receipt records are the ownership record; there is no second once file.
+  if [[ -e "$ROOT/$seat/reachable.json" ]]; then
+    log_failure rebuild "$seat" 'receiver already exists' 'inspect it before any further transfer'
+    return 2
+  fi
+  bounded 30 sno reach init --as "$seat" --name resume >/dev/null || return 1
+  local spawn=(sno reach spawn "$kind" --as "$seat" --cwd "$CWD" --window)
+  [[ -z "$model" ]] || spawn+=(--model "$model")
+  [[ -z "$provider" ]] || spawn+=(--provider "$provider")
+  if ! spawned="$(bounded 90 "${spawn[@]}" 2>&1)"; then
+    log_failure spawn "$seat" "$spawned" 'no release sent; trying a usable fallback'
+    return 1
+  fi
+  if ! bounded 60 sno reach watch "$seat" --idle 10 --timeout 60 >/dev/null; then
+    log_failure startup "$seat" 'startup did not settle' 'receiver remains without task release'
+    return 1
+  fi
+  nonce="$(od -An -N4 -tx1 /dev/urandom | tr -d ' \n')"
+  local prompt="You are rebuilding interrupted work in a NEW conversation; the original conversation was lost. Checkout: $CWD
+Progress record: $CHECKPOINT
+Read the COMPLETE record, including objective/authorization, exclusions, Done, Next and expected result, Known failure, Report destination and any original Reach work card. Do not redo Done. Reconcile actual file/tool results with the record before repeating actions. Available checkout comparison:
+$verify_out
+Use existing scoped memory retrieval for this checkout/session; retrieval failure does not discard the brief. Preserve the original work-card chain and Reply-To; call mail is transport-only, never accept or complete call mail. If this is card-backed work, the recovery initiator must send you your actual receiver card under the same X-Work and continuing Reply-To before release; report its real Message-ID and your recipient. Do not fabricate a response/cancellation from the absent sender. If no original card exists, keep the actual owner instruction and destination; do not invent a card.
+Confirm the exact unfinished next action is recoverable, then output HANDOFF_READY $nonce on its own line. Remain paused and make no task edits until explicit HANDOFF_RELEASE $nonce. If essential facts cannot be recovered, report what is missing and output HANDOFF_LOST $nonce instead."
+  if ! ready="$(bounded 90 sno reach call "$seat" "$prompt" --expect "HANDOFF_(READY|LOST) $nonce" --timeout 90 2>&1)"; then
+    log_failure readiness "$seat" "$ready" 'receiver remains paused; no release sent'
+    return 1
+  fi
+  printf '%s\n' "$ready"
+  if grep -q "HANDOFF_LOST $nonce" <<<"$ready"; then
+    printf 'lost next_action=blocked seat=%s path=%s\n' "$seat" "$CHECKPOINT"
+    return 2
+  fi
+  if [[ "$agent" == hermes || "$agent" == openclaw ]]; then
+    receipt="$(jq -er 'select(.verified == true) | .deliveryReceipt | strings | select(length > 0)' <<<"$ready")" || receipt=''
+    actual_provider=''
+    if [[ -n "$receipt" ]]; then
+      actual_provider="$(bounded 20 "$HERE/rotate-agent-answer-provider" --agent "$agent" --seat "$seat" --receipt "$receipt")" || actual_provider=''
+    fi
+    if [[ -z "$actual_provider" || "$actual_provider" != "$provider" ]]; then
+      log_failure readiness "$seat" "wrong-or-unknown-provider expected=$provider actual=${actual_provider:-unknown}" 'receiver remains paused'
+      return 1
+    fi
+  elif [[ "$agent" == cursor ]]; then
+    current="$(bounded 20 sno subscription-quota-check --agent cursor --seat "$seat" --json)" || current='{}'
+    if [[ "$(jq -r '.model // empty' <<<"$current")" != "$model" || ( -n "$provider" && "$(jq -r '.provider // empty' <<<"$current")" != "$provider" ) ]]; then
+      log_failure readiness "$seat" 'Cursor answer does not match selected model/provider' 'receiver remains paused'
+      return 1
+    fi
+  fi
+  local release="HANDOFF_RELEASE $nonce. The recovery initiator releases the owner's authorized task from $CHECKPOINT; the sender is already stopped, so this is not a fabricated sender response. Correlate your real receiver work card/recipient when present. Before any task write, emit HANDOFF_RELEASED $nonce as a standalone line. Then perform the unfinished action, mention the earlier failed operation and report outcome=rebuilt, original_conversation=lost and next_action=completed|unfinished|blocked with its actual result. Before the first task action, run ${CKPT_CMD[*]} with no FILE in your session to create your default current record. Copy every human-readable task section from $CHECKPOINT into that record, keeping its freshly written machine runtime/session identity. Keep that single current record accurate before actions and at task boundaries; retain $CHECKPOINT as readable prior history. Later prompt/compaction injection reads your session record. Auxiliary writer/retrieval/report failures are logged and do not revoke your task ownership. Report to ${REPORT_TO:-the continuing destination in the brief}."
+  release_status=0
+  bounded 90 sno reach call "$seat" "$release" --expect "^HANDOFF_RELEASED $nonce$" --timeout 90 || release_status=$?
+  if (( release_status != 0 )); then
+    log_failure release "$seat" "receipt missing (exit $release_status)" 'transfer unresolved; inspect this receiver and Reach records; do not start another receiver'
+    return 2
+  fi
+  printf 'rebuilt next_action=unfinished seat=%s original_conversation=lost\n' "$seat"
+  return 0
+}
+preferred="$TO"
+if [[ "$original" == claude-code || "$original" == codex ]]; then
+  if [[ "$verdict" != wait ]]; then preferred="$original"
+  elif [[ "$TO" == "$original" ]]; then
+    if [[ "$original" == claude-code ]]; then preferred=codex; else preferred=claude-code; fi
+  fi
+fi
+status=0
+if [[ "$preferred" == "$TO" ]]; then rebuild "$preferred" "$MODEL" "$PROVIDER" || status=$?
+else rebuild "$preferred" '' '' || status=$?
+fi
+(( status != 0 )) || exit 0
+(( status != 2 )) || exit 1
+if [[ "$verdict" != wait && "$preferred" != "$TO" ]]; then
+  status=0; rebuild "$TO" "$MODEL" "$PROVIDER" || status=$?
+  (( status != 0 )) || exit 0
+  (( status != 2 )) || exit 1
+fi
+printf 'no recovery completed next_action=blocked reason=no-usable-runtime; other-vendor takeover skipped when unavailable; brief retained at %s\n' "$CHECKPOINT"
+exit 1

@@ -1,0 +1,3 @@
+pub mod <cmd_a>;
+pub mod <cmd_b>;
+pub mod version;

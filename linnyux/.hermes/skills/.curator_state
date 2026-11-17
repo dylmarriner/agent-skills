@@ -1,0 +1,9 @@
+{
+  "last_report_path": "/home/linnyux/.hermes/logs/curator/20261111-044550",
+  "last_run_at": "2026-11-11T04:45:50.147964+00:00",
+  "last_run_duration_seconds": 129.641956,
+  "last_run_summary": "auto: 18 archived; llm: skipped (consolidation off)",
+  "last_run_summary_shown_at": "2026-11-11T04:45:50.147964+00:00",
+  "paused": false,
+  "run_count": 23
+}

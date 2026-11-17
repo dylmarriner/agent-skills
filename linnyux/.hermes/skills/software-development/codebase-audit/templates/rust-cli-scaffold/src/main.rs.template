@@ -1,0 +1,113 @@
+/**
+ * <Crate description>
+ *
+ * Purpose
+ * - <one-line purpose>
+ *
+ * Invariants
+ * - <must-hold rule 1>
+ * - <must-hold rule 2>
+ *
+ * Failure Modes
+ * - <what makes this fail>
+ *
+ * Debug Notes
+ * - <how to diagnose>
+ */
+use std::process::ExitCode;
+
+mod commands;
+mod output;
+
+use commands::{audit, bench, replay, validate_canon, version};
+
+// Always include USAGE, EXIT CODES, and GLOBAL OPTIONS in this help text.
+// Subcommands are listed with one-line summaries.
+const USAGE: &str = "\
+<bin> — <project> CLI
+
+USAGE:
+    <bin> <COMMAND> [OPTIONS]
+
+COMMANDS:
+    <cmd-a>    <purpose>
+    <cmd-b>    <purpose>
+
+GLOBAL OPTIONS:
+    --json            Emit machine-readable JSON output
+    -h, --help        Print this help
+    -V, --version     Print version
+
+EXIT CODES:
+    0  success
+    1  command failed
+    2  usage error
+";
+
+fn main() -> ExitCode {
+    // Init tracing to stderr (stdout is reserved for command output).
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
+        )
+        .with_writer(std::io::stderr)
+        .init();
+
+    // === GOTCHA 1: keep --json in the global args list, but strip it from
+    // subcommand args so subcommand parsers don't see it as an unknown flag. ===
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    let json_mode = args.iter().any(|a| a == "--json");
+
+    if args.iter().any(|a| a == "-h" || a == "--help") {
+        println!("{}", USAGE);
+        return ExitCode::SUCCESS;
+    }
+    if args.iter().any(|a| a == "-V" || a == "--version") {
+        return version::run(json_mode);
+    }
+
+    let cmd = match args.first().map(|s| s.as_str()) {
+        Some(c) => c,
+        None => {
+            eprintln!("{}", USAGE);
+            return ExitCode::from(2);
+        }
+    };
+
+    // Strip --json before passing to subcommand (see GOTCHA 1).
+    let sub_args: Vec<&str> = args
+        .iter()
+        .skip(1)
+        .filter(|a| a.as_str() != "--json")
+        .map(|s| s.as_str())
+        .collect();
+
+    // === GOTCHA 2: every subcommand's `run` returns Result<u8, u8>
+    // (success_code, error_code). Normalize to i32 for ExitCode conversion. ===
+    // === GOTCHA 3: don't filter flag args out of the global positional
+    // slice BEFORE handing to subcommand parsers — subcommands own their
+    // own flag parsing. If you strip `--ticks` here, the subcommand gets
+    // only the value and chokes. ===
+    let result: Result<i32, i32> = match cmd {
+        "<cmd-a>" => <crate>::commands::<cmd_a>::run(json_mode)
+            .map(|c| c as i32)
+            .map_err(|e| e as i32),
+        "<cmd-b>" => <crate>::commands::<cmd_b>::run(json_mode, &sub_args)
+            .map(|c| c as i32)
+            .map_err(|e| e as i32),
+        "version" => {
+            version::run(json_mode);
+            Ok(0)
+        }
+        other => {
+            eprintln!("error: unknown command '{}'\n\n{}", other, USAGE);
+            return ExitCode::from(2);
+        }
+    };
+
+    match result {
+        Ok(code) => ExitCode::from(code as u8),
+        Err(code) => ExitCode::from(code as u8),
+    }
+}

@@ -1,0 +1,16 @@
+[Unit]
+Description=SentinelX v5.0 — Offensive Security Intelligence Platform
+Documentation=https://github.com/cypher-21/SentinelX
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/linnyux/SentinelX
+Environment=OLLAMA_HOST=http://127.0.0.1:11434
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/linnyux/SentinelX/.venv/bin/python -m sentinelx.server
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,17 @@
+{
+  "name": "@nexus/self-improve",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Continuous self-improvement plugin for Nexus — autonomous learning, pattern recognition, mistake tracking, and behavioral refinement",
+  "main": "dist/index.js",
+  "openclaw": {
+    "extensions": ["./dist/index.js"],
+    "compat": {
+      "pluginApi": ">=2026.3.24-beta.2",
+      "minGatewayVersion": "2026.3.24-beta.2"
+    }
+  },
+  "scripts": {
+    "build": "mkdir -p dist && cp src/index.js dist/index.js"
+  }
+}

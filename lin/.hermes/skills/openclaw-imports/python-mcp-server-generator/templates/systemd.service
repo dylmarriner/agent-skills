@@ -1,0 +1,22 @@
+[Unit]
+Description=MCP Server — {description}
+Documentation=https://github.com/{owner}/{repo}
+After=network-online.target tailscaled.service
+Wants=tailscaled.service
+
+[Service]
+Type=simple
+WorkingDirectory=/path/to/project
+Environment=HOST=0.0.0.0
+Environment=PORT=8765
+Environment=DATA_DIR=/path/to/data
+Environment=TAILSCALE_DETECT=1
+Environment=EMBED_DIM=64
+ExecStart=/path/to/venv/bin/python /path/to/project/server.py
+Restart=on-failure
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

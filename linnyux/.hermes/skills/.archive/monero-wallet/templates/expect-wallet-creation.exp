@@ -1,0 +1,61 @@
+# Monero Wallet CLI Automation with Expect
+
+Non-interactive wallet generation/restoration using `expect`. Requires `sudo apt install -y expect`.
+
+## Generate New Wallet
+
+```expect
+#!/usr/bin/expect -f
+set timeout 120
+spawn /tmp/monero-x86_64-linux-gnu-v*/monero-wallet-cli \
+    --generate-new-wallet=/tmp/monero-wallet \
+    --password-file=/tmp/pw.txt \
+    --log-level=0
+
+expect "language of your choice:" { send "1\r" }
+expect eof
+```
+
+The seed phrase is printed after wallet creation. Capture it:
+```bash
+grep -A2 "can be used to recover" /tmp/monero-x86_64-linux-gnu-v*/monero-wallet-cli.log
+```
+
+## Restore from Seed
+
+```expect
+#!/usr/bin/expect -f
+set timeout 120
+spawn /tmp/monero-x86_64-linux-gnu-v*/monero-wallet-cli \
+    --restore-deterministic-wallet \
+    --generate-new-wallet=/tmp/restored-wallet \
+    --password-file=/tmp/pw.txt \
+    --daemon-address=stagenet.melo.tools:38081 \
+    --daemon-ssl disabled \
+    --log-level=0
+
+expect "language of your choice:" { send "1\r" }
+expect "Enter your seed" { send "your seed phrase here\r" }
+expect "new password" { send "walletpass\r" }
+expect "password again" { send "walletpass\r" }
+expect eof
+```
+
+## Key Points
+
+- `--password-file` skips password prompt (create with `echo -n 'mypass' > /tmp/pw.txt`)
+- `--daemon-address` is optional for creation (can sync later)
+- `--log-level=0` suppresses verbose output
+- The `expect "language of your choice:"` pattern must be exact — match the full prompt text
+- The Monero CLI takes ~8-10 seconds to start Tor, so `timeout 120` is needed
+- After successful creation, wallet files are: `wallet`, `wallet.keys`, `wallet.address`
+
+## Verifying the Wordlist
+
+The English wordlist is embedded in the monero-wallet-cli binary. To verify seed words:
+
+```bash
+strings /path/to/monero-wallet-cli | grep "^${word}$"
+```
+
+The wordlist starts with "abbey" and contains exactly 1626 English words.

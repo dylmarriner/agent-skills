@@ -1,0 +1,191 @@
+{
+  "version": "1.0",
+  "skills": [
+    {
+      "name": "ai-persona-os-1.6.2",
+      "description": "---",
+      "path": "/etc/windsurf/skills/ai-persona-os-1.6.2",
+      "enabled": true
+    },
+    {
+      "name": "android-adb-1.0.0",
+      "description": "---",
+      "path": "/etc/windsurf/skills/android-adb-1.0.0",
+      "enabled": true
+    },
+    {
+      "name": "audit-first-commentary",
+      "description": "Ensure all code includes detailed, meaningful, audit-ready commentary that explains intent, invariants, tradeoffs, and design decisions. Every non-trivial function must document its contract and error handling. Module docstrings explain purpose and key types. Inline comments explain why, not just what.",
+      "path": "/etc/windsurf/skills/audit-first-commentary",
+      "enabled": true
+    },
+    {
+      "name": "clean-code-1.0.0",
+      "description": "---",
+      "path": "/etc/windsurf/skills/clean-code-1.0.0",
+      "enabled": true
+    },
+    {
+      "name": "coding-1.0.3",
+      "description": "---",
+      "path": "/etc/windsurf/skills/coding-1.0.3",
+      "enabled": true
+    },
+    {
+      "name": "cognitive-memory-1.0.8",
+      "description": "---",
+      "path": "/etc/windsurf/skills/cognitive-memory-1.0.8",
+      "enabled": true
+    },
+    {
+      "name": "debug-pro-1.0.0",
+      "description": "Systematic debugging methodology and language-specific debugging commands.",
+      "path": "/etc/windsurf/skills/debug-pro-1.0.0",
+      "enabled": true
+    },
+    {
+      "name": "debuggable-by-default",
+      "description": "Ensure all code includes comprehensive debugging features: structured JSON logging with correlation IDs, assertions on invariants, diagnostic endpoints, and rich error objects. Make failures reproducible and root causes findable through logs, traces, and metrics.",
+      "path": "/etc/windsurf/skills/debuggable-by-default",
+      "enabled": true
+    },
+    {
+      "name": "dist",
+      "description": "Imported Antigravity skill: dist",
+      "path": "/etc/windsurf/skills/dist",
+      "enabled": true
+    },
+    {
+      "name": "find-skills-0.1.0",
+      "description": "---",
+      "path": "/etc/windsurf/skills/find-skills-0.1.0",
+      "enabled": true
+    },
+    {
+      "name": "free-ride-1.0.4",
+      "description": "---",
+      "path": "/etc/windsurf/skills/free-ride-1.0.4",
+      "enabled": true
+    },
+    {
+      "name": "h",
+      "description": "---",
+      "path": "/etc/windsurf/skills/h",
+      "enabled": true
+    },
+    {
+      "name": "incident-triage-and-rca",
+      "description": "Rapidly diagnose and resolve production incidents: assess severity, gather data, form and test hypotheses, identify root cause, mitigate fast (revert/feature flag/scale), verify resolution, complete root cause analysis within 24 hours, implement prevention measures.",
+      "path": "/etc/windsurf/skills/incident-triage-and-rca",
+      "enabled": true
+    },
+    {
+      "name": "kaiza-mcp-ops",
+      "description": "Operate safely within Kaiza MCP: plan work before acting, request permissions via MCP gate, execute changes through MCP file APIs (no direct edits), run pre-flight checks (lint, typecheck, tests, security), verify results, produce audit summary with immutable trail.",
+      "path": "/etc/windsurf/skills/kaiza-mcp-ops",
+      "enabled": true
+    },
+    {
+      "name": "mcp-skill-1.0.0",
+      "description": "This skill wraps the MCP at https://mcp.exa.ai/mcp for various tools such as web search, deep research, and more.",
+      "path": "/etc/windsurf/skills/mcp-skill-1.0.0",
+      "enabled": true
+    },
+    {
+      "name": "mcporter-1.0.0",
+      "description": "---",
+      "path": "/etc/windsurf/skills/mcporter-1.0.0",
+      "enabled": true
+    },
+    {
+      "name": "memory-setup-1.0.0",
+      "description": "---",
+      "path": "/etc/windsurf/skills/memory-setup-1.0.0",
+      "enabled": true
+    },
+    {
+      "name": "n8n-workflow-automation-1.0.0",
+      "description": "---",
+      "path": "/etc/windsurf/skills/n8n-workflow-automation-1.0.0",
+      "enabled": true
+    },
+    {
+      "name": "no-placeholders-production-code",
+      "description": "Enforce that all code output is production-ready with zero placeholders, stubs, mocks, or scaffolding. Scans for TODO, FIXME, stub, mock, placeholder, and similar anti-patterns. Validates code completeness, all error paths handled, configuration wired, and tests present.",
+      "path": "/etc/windsurf/skills/no-placeholders-production-code",
+      "enabled": true
+    },
+    {
+      "name": "observability-pack-implementer",
+      "description": "Implement standardized observability: structured JSON logging with correlation IDs, distributed tracing with span IDs, metrics collection (RED metrics), PII redaction policy, debug toggles and diagnostics endpoints, health/readiness checks.",
+      "path": "/etc/windsurf/skills/observability-pack-implementer",
+      "enabled": true
+    },
+    {
+      "name": "obsidian-direct-1.0.0",
+      "description": "---",
+      "path": "/etc/windsurf/skills/obsidian-direct-1.0.0",
+      "enabled": true
+    },
+    {
+      "name": "proactive-agent-3.1.0",
+      "description": "---",
+      "path": "/etc/windsurf/skills/proactive-agent-3.1.0",
+      "enabled": true
+    },
+    {
+      "name": "prompt-engineering-expert-1.0.0",
+      "description": "---",
+      "path": "/etc/windsurf/skills/prompt-engineering-expert-1.0.0",
+      "enabled": true
+    },
+    {
+      "name": "refactor-with-safety",
+      "description": "Execute refactors safely: write comprehensive regression tests BEFORE refactoring, verify behavior identical with multiple techniques (regression tests, property tests, output comparison, benchmarks), make incremental changes, use feature flags for rollout, plan rollback.",
+      "path": "/etc/windsurf/skills/refactor-with-safety",
+      "enabled": true
+    },
+    {
+      "name": "release-readiness",
+      "description": "Verify code is production-ready before release: all quality gates pass, version numbers correct, changelog accurate, no breaking changes (or documented), deployment impact assessed, documentation current, staging tested, release notes written.",
+      "path": "/etc/windsurf/skills/release-readiness",
+      "enabled": true
+    },
+    {
+      "name": "repo-understanding",
+      "description": "Quickly understand repository structure, conventions, architecture, and dependencies before making changes. Understand tech stack, key modules, testing strategy, quality gates, naming conventions, and known constraints. Document findings in workspace memory.",
+      "path": "/etc/windsurf/skills/repo-understanding",
+      "enabled": true
+    },
+    {
+      "name": "secure-by-default",
+      "description": "Implement security as a default: secrets never in code, all external input validated, output encoded, SQL parameterized, SSRF protection, least privilege, cryptography from standard libraries only, strong password hashing, short-lived tokens.",
+      "path": "/etc/windsurf/skills/secure-by-default",
+      "enabled": true
+    },
+    {
+      "name": "self-improving-1.2.3",
+      "description": "---",
+      "path": "/etc/windsurf/skills/self-improving-1.2.3",
+      "enabled": true
+    },
+    {
+      "name": "self-improving-agent-1.0.11",
+      "description": "---",
+      "path": "/etc/windsurf/skills/self-improving-agent-1.0.11",
+      "enabled": true
+    },
+    {
+      "name": "src",
+      "description": "Imported Antigravity skill: src",
+      "path": "/etc/windsurf/skills/src",
+      "enabled": true
+    },
+    {
+      "name": "test-engineering-suite",
+      "description": "Implement comprehensive production-grade testing: unit tests (>60%), integration tests (20-30%), contract tests, property-based tests. Achieve >80% coverage. Write clear test names that describe behavior. Test all error paths explicitly. Include minimal repro tests for bugfixes.",
+      "path": "/etc/windsurf/skills/test-engineering-suite",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+/**
+ * <crate_name> integration tests.
+ *
+ * Shell out to the compiled binary via CARGO_BIN_EXE_<bin_name> and verify
+ * every subcommand returns the right exit code and produces the right output
+ * shape. These are intentionally minimal — the deeper test surface lives in
+ * the library crates this CLI wraps.
+ */
+use std::process::Command;
+
+fn bin() -> Command {
+    let path = env!("CARGO_BIN_EXE_<bin_name>");
+    Command::new(path)
+}
+
+#[test]
+fn help_exits_zero() {
+    let out = bin().arg("--help").output().expect("spawn --help");
+    assert!(out.status.success());
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("USAGE"));
+    // assert stdout.contains("<bin>") and every command name
+}
+
+#[test]
+fn version_exits_zero() {
+    let out = bin().arg("version").output().expect("spawn version");
+    assert!(out.status.success());
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains(env!("CARGO_PKG_VERSION")));
+}
+
+#[test]
+fn <cmd_a>_passes() {
+    let out = bin().arg("<cmd-a>").output().expect("spawn <cmd-a>");
+    assert!(out.status.success());
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("PASS"));
+}
+
+#[test]
+fn <cmd_a>_json_has_required_fields() {
+    let out = bin()
+        .args(["<cmd-a>", "--json"])
+        .output()
+        .expect("spawn <cmd-a> --json");
+    assert!(out.status.success());
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let parsed: serde_json::Value = serde_json::from_str(stdout.trim())
+        .expect("output must be valid JSON");
+    assert_eq!(parsed["command"], "<cmd-a>");
+    assert_eq!(parsed["status"], "pass");
+}
+
+#[test]
+fn <cmd_b>_passes() {
+    let out = bin()
+        .args(["<cmd-b>", "--iters", "1000"])
+        .output()
+        .expect("spawn <cmd-b>");
+    assert!(out.status.success());
+}
+
+#[test]
+fn unknown_command_exits_two() {
+    let out = bin().arg("nosuch").output().expect("spawn nosuch");
+    assert_eq!(out.status.code(), Some(2));
+}
+
+#[test]
+fn bad_arg_exits_two() {
+    let out = bin()
+        .args(["<cmd-b>", "--iters", "abc"])
+        .output()
+        .expect("spawn <cmd-b> --iters abc");
+    assert_eq!(out.status.code(), Some(2));
+}
