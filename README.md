@@ -17,7 +17,7 @@ Each skill is a directory with a `SKILL.md` (YAML frontmatter: `name`, `descript
 
 - `node_modules/`, Next.js `.next/` build output, `.git/`, curator backup tarballs (`.curator_backups/`), the local hub index cache (`.hub/`).
 - Repo-scoped skill folders inside individual projects (only agent-level homes are mirrored).
-- Dangling symlinks: 151 `gstack*` skills in `lin/.hermes/skills` point at `/media/kubuntux/DEVELOPMENT1/gstack/…`, an external disk that was unmounted at snapshot time. Their content is missing until it is mounted and re-mirrored.
+- Dead symlinks: 155, inherited from the source homes and left in place so their original paths are recorded — 108 `gstack*` skills point into `/media/kubuntux/DEVELOPMENT1/gstack/…` (external disk unmounted at snapshot time) and 47 point at pruned targets (an `_npx` cache and `.agents/skills` entries already deleted on the host). Their content is absent from the repo until those sources are restored and re-mirrored.
 
 ## Credentials
 
