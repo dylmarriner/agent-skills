@@ -6,10 +6,10 @@ Snapshot of every skill installed for the agents on both of my machines (`lin`, 
 
 `<host>/<agent>/…` — agent names are the tool's own directory, not a person.
 
-| host | sources |
-| --- | --- |
-| `lin/` | `.hermes/skills`, `.claude/skills`, `.codex/skills`, `.agents/skills`, `openclaw/{skills,plugin-skills,extensions/*/skills}`, `devin/`, `etc-antigravity-skills/` |
-| `linnyux/` | `.hermes/skills`, `.claude/skills`, `.codex/skills`, `.agents/skills`, `openclaw/skills`, `etc-antigravity-skills/`, `etc-windsurf-skills/` |
+Every `~/.*/skills` directory on both hosts, plus the system-level `antigravity`/`windsurf` skill dirs. Agent names are the tool's own dot-directory, not a person.
+
+`lin/`: `.hermes`, `.claude`, `.codex`, `.agents`, `.openclaude`, `.cc-switch`, `.orchestra`, `.ecc-antigravity`, `.kimi-code`, `.kiro`, `.continue`, `.cline`, `.codebuddy`, `.copilot`, `.cursor`, `.qwen`, `.trae`, `.zcode`, `.kilo`, `.kilocode`, `.gemini`, `.grok`, `.factory`, `.augment`, `.bob`, `.codeium`, `.openclaw`, `.opencode`, `.openhoof`, `.openhuman`, `.openjarvis`, `.openrig`, `.vibe`, `.moltbot`, `.understand-anything-plugin`, `openclaw/extensions/*/skills`, `devin/`, `etc-antigravity-skills/`
+`linnyux/`: `.hermes`, `.claude`, `.codex`, `.agents`, `.clawdbot`, `.cline`, `openclaw/skills`, `etc-antigravity-skills/`, `etc-windsurf-skills/`
 
 Each skill is a directory with a `SKILL.md` (YAML frontmatter: `name`, `description`) plus optional `references/`, `scripts/`, `templates/`, `assets/`.
 
@@ -17,6 +17,7 @@ Each skill is a directory with a `SKILL.md` (YAML frontmatter: `name`, `descript
 
 - `node_modules/`, Next.js `.next/` build output, `.git/`, curator backup tarballs (`.curator_backups/`), the local hub index cache (`.hub/`).
 - Repo-scoped skill folders inside individual projects (only agent-level homes are mirrored).
+- Dangling symlinks: 151 `gstack*` skills in `lin/.hermes/skills` point at `/media/kubuntux/DEVELOPMENT1/gstack/…`, an external disk that was unmounted at snapshot time. Their content is missing until it is mounted and re-mirrored.
 
 ## Credentials
 

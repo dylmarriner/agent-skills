@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Recorded quota responses; only the external quota reader is replaced.
+set -Eeuo pipefail
+printf '%s\n' "$*" >>"$QUOTA_LOG"
+if [[ " $* " == *' --pick '* ]]; then
+  cat -- "$QUOTA_FIXTURES/pick.json"
+else
+  cat -- "$QUOTA_FIXTURES/sender.json"
+fi

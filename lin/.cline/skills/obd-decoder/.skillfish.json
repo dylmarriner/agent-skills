@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "obd-decoder",
+  "owner": "carsxe",
+  "repo": "carsxe-claude-plugin",
+  "path": "carsxe/skills/obd-decoder",
+  "branch": "main",
+  "sha": "086dfe61b353f73d83f19af55a2bc0bd1736b781",
+  "source": "manual"
+}
